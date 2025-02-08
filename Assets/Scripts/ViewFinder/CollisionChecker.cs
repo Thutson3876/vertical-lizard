@@ -8,7 +8,6 @@ public class CollisionChecker : MonoBehaviour
     public int side;
 
     void OnTriggerEnter(Collider other) {
-        print("Collision with: " + other.name);
         if (other.gameObject.layer == LayerMask.NameToLayer("Cuttable"))
             frustumLocalSpace.AddObjectToCut(other.gameObject, side);
         else if (other.gameObject.name.Contains("Ending"))
