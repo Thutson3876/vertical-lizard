@@ -4,16 +4,22 @@ using UnityEngine;
 
 public class CustomFrustumLocalSpace : MonoBehaviour
 {
-    public Camera finder;
-    public float xRatio = 16;
-    public float yRatio = 9;
-    public float customOffset = 0.1f;
-    public Transform capturePoint;
-    public PlayerController controller;
+    [SerializeField]
+    Camera finder;
+    [SerializeField]
+    float xRatio = 1;
+    [SerializeField]
+    float yRatio = 1;
+    [SerializeField]
+    float customOffset = 0.1f;
+    [SerializeField]
+    Transform capturePoint;
+
     float aspectRatio = 1;
     GameObject leftPrimitivePlane, rightPrimitivePlane, topPrimitivePlane, bottomPrimitivePlane, frustumObject;
     MeshFilter leftPrimitivePlaneMF, rightPrimitivePlaneMF, topPrimitivePlaneMF, bottomPrimitivePlaneMF, frustumObjectMF;
     MeshCollider leftPrimitivePlaneMC, rightPrimitivePlaneMC, topPrimitivePlaneMC, bottomPrimitivePlaneMC, frustumObjectMC;
+
     List<GameObject> leftToCut, rightToCut, topToCut, bottomToCut, objectsInFrustum;
     Vector3 leftUpFrustum, rightUpFrustum, leftDownFrustum, rightDownFrustum, cameraPos;
     Plane leftPlane, rightPlane, topPlane, bottomPlane;
@@ -97,7 +103,6 @@ public class CustomFrustumLocalSpace : MonoBehaviour
     {
         isTakingPicture = isTakingPic;
 
-        controller.ChangePlayerState(false);
         //SETUP PHASE
         aspectRatio = finder.aspect;
         var frustumHeight = 2.0f * finder.farClipPlane * Mathf.Tan(finder.fieldOfView * 0.5f * Mathf.Deg2Rad);
@@ -173,8 +178,6 @@ public class CustomFrustumLocalSpace : MonoBehaviour
         List<GameObject> allObjects = new List<GameObject>();
         List<GameObject> intactObjects = new List<GameObject>();
 
-        print("Left Length: " + leftToCut.Count);
-
         foreach (var obj in leftToCut) {
 
             if (isTakingPicture)
@@ -202,8 +205,6 @@ public class CustomFrustumLocalSpace : MonoBehaviour
             cutPiece.AddChunk(newPiece);
             allObjects.Add(newPiece);
         }
-
-        print("Right Length: " + rightToCut.Count);
 
         foreach (var obj in rightToCut) {
 
@@ -244,8 +245,6 @@ public class CustomFrustumLocalSpace : MonoBehaviour
             }
         }
 
-
-        print("Top Length: " + topToCut.Count);
         foreach (var obj in topToCut) {
 
 
@@ -283,7 +282,6 @@ public class CustomFrustumLocalSpace : MonoBehaviour
             }
         }
 
-        print("Bottom Length: " + bottomToCut.Count);
         foreach (var obj in bottomToCut) {
 
             var s = obj.name.Split('/');
@@ -350,17 +348,17 @@ public class CustomFrustumLocalSpace : MonoBehaviour
         else {
 
             foreach(var obj in allObjects)
-                Destroy(obj.GetComponent<CutPiece>());
+            {
+                if(obj != null && obj.TryGetComponent(out CutPiece comp))
+                    Destroy(comp);
+            }
+                
 
             foreach(var obj in objectsInFrustum)
                 Destroy(obj);
 
             activeFilm.ActivateFilm();
         }
-
-        yield return new WaitForSeconds(0.5f);
-        
-        controller.ChangePlayerState(true);
     }
 
     public void AddObjectToCut(GameObject toCut, int side)
@@ -391,6 +389,17 @@ public class CustomFrustumLocalSpace : MonoBehaviour
 
     public void AddEndingObject(GameObject end) {
         ending = end;
+    }
+
+    public void SetCapture(Transform captureParent)
+    {
+        foreach (Transform t in captureParent)
+            t.parent = capturePoint;
+    }
+
+    public void SetActiveFilm(PolaroidFilm film)
+    {
+        activeFilm = film;
     }
 
     Mesh CreateBoxMesh(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4, Vector3 v5, Vector3 v6, Vector3 v7, Vector3 v8)
