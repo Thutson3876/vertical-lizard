@@ -10,7 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 7483508928046580138}
   - component: {fileID: 5639911868397580320}
-  m_Layer: 0
+  - component: {fileID: 8743803075372269510}
+  m_Layer: 8
   m_Name: Film
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -47,6 +48,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   storage: {fileID: 8808696731773399175}
+--- !u!135 &8743803075372269510
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 138698672371398310}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 5.03
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3868919191249678091
 GameObject:
   m_ObjectHideFlags: 0

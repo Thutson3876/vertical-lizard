@@ -163,7 +163,7 @@ public class CustomFrustumLocalSpace : MonoBehaviour
         StartCoroutine(TestCut(isTakingPicture));
     }
 
-    async IAsyncEnumerator<T> TestCut(bool isTakingPicture) {
+    IEnumerator TestCut(bool isTakingPicture) {
 
         /* trick to give time to unity to detect collisions \ 1 frame isn't enough */
         yield return null;
@@ -185,13 +185,13 @@ public class CustomFrustumLocalSpace : MonoBehaviour
             {
                 var initialName = obj.name;
                 obj.name = obj.name + "/cut";
-                GameObject original = Instantiate(obj);
+                GameObject original;
 
-                /*AsyncInstantiateOperation<GameObject> t = InstantiateAsync(obj);
+                AsyncInstantiateOperation<GameObject> t = InstantiateAsync(obj);
 
-                yield return t.WaitForCompletion();
+                yield return new WaitUntil(()=> t.isDone);
 
-                original = t.Result[0];*/
+                original = t.Result[0];
                 original.transform.position = obj.transform.position;
                 original.transform.rotation = obj.transform.rotation;
                 original.name = initialName;
@@ -222,7 +222,13 @@ public class CustomFrustumLocalSpace : MonoBehaviour
                 {
                     var initialName = obj.name;
                     obj.name = obj.name + "/cut";
-                    var original = Instantiate(obj);
+                    GameObject original;
+
+                    AsyncInstantiateOperation<GameObject> t = InstantiateAsync(obj);
+
+                    yield return new WaitUntil(() => t.isDone);
+
+                    original = t.Result[0];
                     original.transform.position = obj.transform.position;
                     original.transform.rotation = obj.transform.rotation;
                     original.name = initialName;
@@ -260,7 +266,13 @@ public class CustomFrustumLocalSpace : MonoBehaviour
             {
                 var initialName = obj.name;
                 obj.name = obj.name + "/cut";
-                var original = Instantiate(obj);
+                GameObject original;
+
+                AsyncInstantiateOperation<GameObject> t = InstantiateAsync(obj);
+
+                yield return new WaitUntil(() => t.isDone);
+
+                original = t.Result[0];
                 original.transform.position = obj.transform.position;
                 original.transform.rotation = obj.transform.rotation;
                 original.name = initialName;
@@ -296,7 +308,13 @@ public class CustomFrustumLocalSpace : MonoBehaviour
             {
                 var initialName = obj.name;
                 obj.name = obj.name + "/cut";
-                var original = Instantiate(obj);
+                GameObject original;
+
+                AsyncInstantiateOperation<GameObject> t = InstantiateAsync(obj);
+
+                yield return new WaitUntil(() => t.isDone);
+
+                original = t.Result[0];
                 original.transform.position = obj.transform.position;
                 original.transform.rotation = obj.transform.rotation;
                 original.name = initialName;
