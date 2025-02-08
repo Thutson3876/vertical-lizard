@@ -5,10 +5,10 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public class CRTPostProcess : MonoBehaviour
 {
-    public Texture image;
+    public Material crtShader;
 
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
-        Graphics.Blit(image, destination);
+        Graphics.Blit(source, destination, crtShader);
     }
 }
