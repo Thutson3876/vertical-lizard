@@ -13,6 +13,8 @@ Shader "Dither 3D/Opaque"
         _Color ("Color", Color) = (1,1,1,1)
         _MainTex ("Albedo", 2D) = "white" {}
         _BumpMap ("Normal Map", 2D) = "bump" {}
+        _MaskMap ("Mask Map", 2D) = "white" {}
+        [Toggle] _UseMaskMap("Use Mask Map?", Float) = 0.0
         _EmissionMap ("Emission", 2D) = "white" {}
 		_EmissionColor ("Emission Color", Color) = (0,0,0,0)
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
@@ -57,10 +59,13 @@ Shader "Dither 3D/Opaque"
         sampler2D _MainTex;
         sampler2D _BumpMap;
         sampler2D _EmissionMap;
+        sampler2D _MaskMap;
 
         float _FadeInColor;
         float _PostExposure;
         float4 _DitherColor;
+
+        float _UseMaskMap;
 
         struct Input
         {
@@ -86,28 +91,41 @@ Shader "Dither 3D/Opaque"
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-            fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
+            float4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
             o.Albedo = c.rgb;
             o.Normal = UnpackNormal (tex2D (_BumpMap, IN.uv_BumpMap));
-            o.Emission = tex2D (_EmissionMap, IN.uv_EmissionMap) * _EmissionColor;
+            o.Emission = c.rgb;
 
-            o.Metallic = _Metallic;
-            o.Smoothness = _Glossiness;
+            float4 maskMap = tex2D(_MaskMap, IN.uv_MainTex);
+
+            if (_UseMaskMap == 0.0)
+            {
+                o.Metallic = _Metallic;
+                o.Smoothness = _Glossiness;
+            }
+            else
+            {
+                o.Metallic = maskMap.r;
+                o.Smoothness = maskMap.a;
+            }
+            
             o.Alpha = c.a;
         }
 
         void mycolor (Input IN, SurfaceOutputStandard o, inout fixed4 color)
         {
             UNITY_APPLY_FOG(IN.fogCoord, color);
+
+            float4 oldColor = color;
             
             color.r = GetDither3DColor(IN.uv_DitherTex, IN.screenPos, color.r);
             color.g = GetDither3DColor(IN.uv_DitherTex, IN.screenPos, color.g);
             color.b = GetDither3DColor(IN.uv_DitherTex, IN.screenPos, color.b);
 
-            color *= lerp(color, _DitherColor, _DitherColor.a);
+            color = lerp(color, oldColor, _FadeInColor);
             
-            color = saturate(lerp(color, float4(o.Albedo, o.Alpha), _FadeInColor))
-                * _PostExposure;
+            /*color = lerp(color, float4(o.Emission, color.a), _FadeInColor)
+                * _PostExposure;*/
         }
         ENDCG
     }
