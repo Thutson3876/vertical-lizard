@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using SaintsField.Playa;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,14 +9,24 @@ public class Creature : MonoBehaviour
 {
     [SerializeField] [SerializeReference] private List<FiniteState> states = new List<FiniteState>();
     [SerializeField] private int tickRate = 30;
-    [field: SerializeField]
-    public NavMeshAgent NavMeshAgent { get; private set; }
+    [SerializeField] private Transform targetTr;
+    public Transform Target { get; set; }
     private FiniteState _currentState;
     private float _timeSinceLastTick = 0f;
     private float _tickTime;
-    
-    [ContextMenu("Add WanderState")]
-    private void AddWanderState() => states.Add(new WanderState());
+
+    [Button]
+    private void AddWanderState()
+    {
+        states.Add(new WanderState());
+    }
+
+    [Button]
+    private void AddFollowState() => states.Add(new FollowState());
+
+    [Button]
+    private void AddIdleState() => states.Add(new IdleState());
+
 
     private void Awake()
     {
@@ -27,20 +38,38 @@ public class Creature : MonoBehaviour
 
     private void Update()
     {
+        _currentState.OnUpdate(this);
         if (Time.unscaledTime <= _timeSinceLastTick)
         {
             return;
         }
 
+        LookForTarget();
         _currentState.OnTick(this);
         _timeSinceLastTick = Time.unscaledTime + _tickTime;
     }
 
-    private void ChangeState(FiniteState state)
+    public void ChangeState(FiniteState state)
     {
         var prevState = _currentState;
         _currentState.OnExit(this, state);
         _currentState = state;
         _currentState.OnEnter(this, prevState);
+    }
+
+    private void LookForTarget()
+    {
+        var fwd = transform.forward;
+        var toTarget = (targetTr.position - transform.position);
+        var mag = toTarget.magnitude;
+
+        if (mag < 3.0f && Vector3.Dot(fwd, toTarget.normalized) > 0.7f)
+        {
+            Target = targetTr;
+        }
+        else
+        {
+            Target = null;
+        }
     }
 }
