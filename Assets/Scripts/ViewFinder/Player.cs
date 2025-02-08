@@ -43,19 +43,24 @@ public class Player : MonoBehaviour
     [SerializeField]
     Vector3 inspectFilmRotation;
 
-    FilmState currentFilmState;
+    CharacterController characterController;
+    Vector3 storedPos = Vector3.zero;
+    float fallingDuration = 3;
+    float currentFallTime = 0;
 
-    enum FilmState
+    bool isInspecting = false;
+
+
+    private void Awake()
     {
-        EMPTY,
-        IDLE,
-        INSPECT
+        characterController = GetComponent<CharacterController>();
     }
 
     private void Start()
     {
-        filmPrefab.SetActive(false);
         IdleFilm();
+
+        StartCoroutine(GroundCheck());
     }
 
     // Update is called once per frame
@@ -71,11 +76,10 @@ public class Player : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
-            InspectFilm();
-        }
-        if (Input.GetKeyDown(KeyCode.Mouse1))
-        {
-            IdleFilm();
+            if(!isInspecting)
+                InspectFilm();
+            else
+                IdleFilm();
         }
         if (Input.GetKeyDown(KeyCode.E))
         {
@@ -88,6 +92,9 @@ public class Player : MonoBehaviour
 
     private void PickupDetection()
     {
+        if (heldItem != null)
+            return;
+
         RaycastHit hit;
 
         if(!Physics.Raycast(polaroidCamera.transform.position, polaroidCamera.transform.forward, out hit, reach, pickupLayer))
@@ -107,7 +114,7 @@ public class Player : MonoBehaviour
 
     private void PickupItem()
     {
-        if (currentPickable == null)
+        if (currentPickable == null || heldItem != null)
             return;
 
         currentPickable.enabled = false;
@@ -115,10 +122,12 @@ public class Player : MonoBehaviour
 
         currentPickable = null;
 
+        isInspecting = false;
+
         heldItem.transform.parent = filmParent.transform;
 
-        Tween.LocalPosition(heldItem.transform, inspectFilmPos, 0.5f, Ease.OutExpo);
-        Tween.LocalRotation(heldItem.transform, inspectFilmRotation, 0.5f, Ease.OutExpo);
+        Tween.LocalPosition(heldItem.transform, Vector3.zero, 0.5f, Ease.OutExpo);
+        Tween.LocalRotation(heldItem.transform, Vector3.zero, 0.5f, Ease.OutExpo);
     }
 
     private void UseFilm()
@@ -131,45 +140,59 @@ public class Player : MonoBehaviour
 
         space.Cut(false);
 
-        Destroy(heldItem.gameObject);
+        Destroy(heldItem);
         heldItem = null;
     }
 
     private void InspectFilm()
     {
+        if (heldItem == null)
+            return;
+
+        isInspecting = true;
+
         Tween.LocalPosition(filmParent, inspectFilmPos, 0.5f, Ease.OutExpo);
         Tween.LocalRotation(filmParent, inspectFilmRotation, 0.5f, Ease.OutExpo);
     }
 
     private void IdleFilm()
     {
+        if (heldItem == null)
+            return;
+
+        isInspecting = false;
+
         Tween.LocalPosition(filmParent, idleFilmPos, 0.5f, Ease.OutExpo);
         Tween.LocalRotation(filmParent, idleFilmRotation, 0.5f, Ease.OutExpo);
     }
 
     IEnumerator Capture()
     {
+        if (heldItem != null)
+            yield break;
+
         polaroidCamera.gameObject.SetActive(true);
 
-        yield return new WaitForSeconds(.1f);
+        yield return new WaitForSeconds(0.1f);
 
-        filmPrefab.SetActive(true);
-        heldItem = filmPrefab;
-        currentFilmState = FilmState.IDLE;
+        GameObject obj = Instantiate(filmPrefab, filmParent);
+        obj.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.Euler(Vector3.zero));
+
+        Film film = obj.GetComponent<Film>();
+
+        heldItem = obj;
 
         polaroidCamera.gameObject.SetActive(false);
         
         frustrum.Cut(true);
-
-        Film film = filmPrefab.GetComponent<Film>();
 
         film.SetFrustum(frustrum);
     }
 
     IEnumerator PlaceItem()
     {
-        yield return new WaitForSeconds(.1f);
-        filmPrefab.SetActive(false);
+        if (heldItem == null)
+            yield break;
 
         Film film = heldItem.GetComponent<Film>();
 
@@ -183,5 +206,36 @@ public class Player : MonoBehaviour
         Destroy(heldItem.gameObject);
 
         heldItem = null;
+    }
+
+    IEnumerator GroundCheck()
+    {
+        float duration = 1;
+        WaitForSeconds waitTime = new(duration);
+        while (enabled)
+        {
+            if(Physics.Raycast(transform.position, Vector2.down, 2f))
+            {
+                storedPos = transform.position;
+                currentFallTime = 0;
+            }
+            else if (characterController.velocity.y < 0)
+            {
+                currentFallTime += duration;
+            }
+
+            if (currentFallTime > fallingDuration)
+            {
+                characterController.enabled = false;
+
+                transform.position = storedPos;
+
+                currentFallTime = 0;
+
+                characterController.enabled = true;
+            }
+
+            yield return waitTime; 
+        }
     }
 }

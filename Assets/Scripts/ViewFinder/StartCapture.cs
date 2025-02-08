@@ -10,10 +10,12 @@ public class StartCapture : MonoBehaviour
     Transform capture;
 
     CustomFrustumLocalSpace frustum;
+    Camera cam;
 
     private void Awake()
     {
         frustum = GetComponent<CustomFrustumLocalSpace>();
+        cam = GetComponent<Camera>();
     }
 
     private void Start()
@@ -23,6 +25,7 @@ public class StartCapture : MonoBehaviour
 
     IEnumerator DelayedStart()
     {
+        cam.enabled = true;
         yield return new WaitForSeconds(.1f);
 
         frustum.Cut(true);
@@ -32,5 +35,7 @@ public class StartCapture : MonoBehaviour
         Transform storage = attachedFilm.GetStorage();
         foreach(Transform t in capture)
             t.parent = storage;
+
+        cam.enabled = false;
     }
 }

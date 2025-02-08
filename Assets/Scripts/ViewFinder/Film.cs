@@ -21,7 +21,8 @@ public class Film : MonoBehaviour
 
     public void Cut(Transform targetTransform)
     {
-        frustum.transform.SetPositionAndRotation(targetTransform.position, targetTransform.rotation);
+        if(!frustum.CompareTag("Player"))
+            frustum.transform.SetPositionAndRotation(targetTransform.position, targetTransform.rotation);
 
         frustum.Cut(false);
     }
