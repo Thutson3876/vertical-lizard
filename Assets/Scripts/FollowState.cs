@@ -31,12 +31,10 @@ public class FollowState : FiniteState
             Debug.Log("kill");
         }
 
-        if (NavMesh.SamplePosition(creature.Target.position.ToXZ(), out var hit, 1f, 1))
+        if (NavMesh.SamplePosition(creature.Target.position, out var hit, 1f, 1))
         {
             Debug.Log("GO");
             _currentTarget = hit.position;
-            creature.transform.forward = (_currentTarget - creature.transform.position).ToXZ().normalized;
-            creature.transform.up = hit.normal;
         }
     }
 

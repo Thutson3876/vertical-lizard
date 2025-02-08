@@ -7,34 +7,26 @@ using UnityEngine.AI;
 
 public class Creature : MonoBehaviour
 {
-    [SerializeField] [SerializeReference] private List<FiniteState> states = new List<FiniteState>();
     [SerializeField] private int tickRate = 30;
     [SerializeField] private Transform targetTr;
     [SerializeField] private float creatureSpeed = 3f;
+    [SerializeField] private NavMeshAgent agent;
+    [SerializeField] private float targetLostTime = 5f;
+    [SerializeField] private float minTargetDistance = 3f;
+    [SerializeField] private float fov = 110f;
     public Transform Target { get; set; }
     private FiniteState _currentState;
     private float _timeSinceLastTick = 0f;
     private float _tickTime;
+    private float _timeSinceTarget = 0f;
     private Rigidbody _rigidbody;
-
-    [Button]
-    private void AddWanderState()
-    {
-        states.Add(new WanderState());
-    }
-
-    [Button]
-    private void AddFollowState() => states.Add(new FollowState());
-
-    [Button]
-    private void AddIdleState() => states.Add(new IdleState());
-
 
     private void Awake()
     {
-        _currentState = states[0];
+        _currentState = new IdleState();
         _tickTime = 1f / tickRate;
         _timeSinceLastTick = Time.unscaledTime + _tickTime;
+        _timeSinceTarget = Time.unscaledTime + targetLostTime;
         _currentState.OnEnter(this, null);
         _rigidbody = GetComponent<Rigidbody>();
     }
@@ -57,8 +49,8 @@ public class Creature : MonoBehaviour
         var target = _currentState.GetTargetPosition(this);
         if (target != null)
         {
-            _rigidbody.MovePosition(Vector3.MoveTowards(transform.position, target.Value,
-                creatureSpeed * Time.deltaTime));
+            transform.LookAt(target.Value, Vector3.up);
+            agent.SetDestination(target.Value);
         }
     }
 
@@ -75,15 +67,20 @@ public class Creature : MonoBehaviour
         var fwd = transform.forward;
         var toTarget = (targetTr.position - transform.position);
         var mag = toTarget.magnitude;
-
-        if (mag < 3.0f && Vector3.Dot(fwd, toTarget.normalized) > 0.7f)
+        bool targetFound = mag <= minTargetDistance && Vector3.Angle(toTarget, fwd) < fov * 0.5f;
+        if (targetFound)
         {
             Target = targetTr;
+            _timeSinceTarget = Time.unscaledTime + targetLostTime;
         }
         else
         {
-            Debug.Log("no target");
-            Target = null;
+            if (Target != null && Time.unscaledTime >= _timeSinceTarget)
+            {
+                Debug.Log("target lost");
+                Target = null;
+            }
+            //do something with timer to go back to no target            
         }
     }
 }

@@ -32,7 +32,6 @@ public class WanderState : FiniteState
         if (Vector3.SqrMagnitude(creature.transform.position.ToXZ() - _currentTarget.ToXZ()) < 0.1f * 0.1f)
         {
             GetRandomTarget(creature.transform);
-            creature.transform.forward = (_currentTarget - creature.transform.position).ToXZ().normalized;
         }
     }
 
@@ -50,7 +49,7 @@ public class WanderState : FiniteState
     {
         Vector3 randomDir = Random.insideUnitSphere * scanRadius;
         randomDir += tr.position;
-        if (NavMesh.SamplePosition(randomDir.ToXZ(), out var hit, scanRadius, 1))
+        if (NavMesh.SamplePosition(randomDir, out var hit, scanRadius, 1))
         {
             _currentTarget = hit.position;
         }
