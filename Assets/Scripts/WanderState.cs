@@ -36,11 +36,14 @@ public class WanderState : FiniteState
         }
     }
 
+    public override Vector3? GetTargetPosition(Creature creature)
+    {
+        return _currentTarget;
+    }
+
     public override void OnUpdate(Creature creature)
     {
-        creature.transform.position = Vector3.MoveTowards(creature.transform.position,
-            _currentTarget.ToXZ() + new Vector3(0f, creature.transform.position.y, 0f),
-            speed * Time.deltaTime);
+        
     }
 
     private void GetRandomTarget(Transform tr)

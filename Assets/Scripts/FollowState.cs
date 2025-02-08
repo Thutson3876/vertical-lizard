@@ -36,13 +36,17 @@ public class FollowState : FiniteState
             Debug.Log("GO");
             _currentTarget = hit.position;
             creature.transform.forward = (_currentTarget - creature.transform.position).ToXZ().normalized;
+            creature.transform.up = hit.normal;
         }
+    }
+
+    public override Vector3? GetTargetPosition(Creature creature)
+    {
+        return _currentTarget;
     }
 
     public override void OnUpdate(Creature creature)
     {
-        creature.transform.position = Vector3.MoveTowards(creature.transform.position,
-            _currentTarget.ToXZ() + new Vector3(0f, creature.transform.position.y, 0f),
-            Time.deltaTime * creaturingSpeed);
+
     }
 }

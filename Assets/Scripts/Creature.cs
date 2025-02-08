@@ -10,10 +10,12 @@ public class Creature : MonoBehaviour
     [SerializeField] [SerializeReference] private List<FiniteState> states = new List<FiniteState>();
     [SerializeField] private int tickRate = 30;
     [SerializeField] private Transform targetTr;
+    [SerializeField] private float creatureSpeed = 3f;
     public Transform Target { get; set; }
     private FiniteState _currentState;
     private float _timeSinceLastTick = 0f;
     private float _tickTime;
+    private Rigidbody _rigidbody;
 
     [Button]
     private void AddWanderState()
@@ -34,6 +36,7 @@ public class Creature : MonoBehaviour
         _tickTime = 1f / tickRate;
         _timeSinceLastTick = Time.unscaledTime + _tickTime;
         _currentState.OnEnter(this, null);
+        _rigidbody = GetComponent<Rigidbody>();
     }
 
     private void Update()
@@ -47,6 +50,16 @@ public class Creature : MonoBehaviour
         LookForTarget();
         _currentState.OnTick(this);
         _timeSinceLastTick = Time.unscaledTime + _tickTime;
+    }
+
+    private void FixedUpdate()
+    {
+        var target = _currentState.GetTargetPosition(this);
+        if (target != null)
+        {
+            _rigidbody.MovePosition(Vector3.MoveTowards(transform.position, target.Value,
+                creatureSpeed * Time.deltaTime));
+        }
     }
 
     public void ChangeState(FiniteState state)
@@ -69,6 +82,7 @@ public class Creature : MonoBehaviour
         }
         else
         {
+            Debug.Log("no target");
             Target = null;
         }
     }

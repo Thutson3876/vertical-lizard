@@ -32,6 +32,11 @@ public class IdleState : FiniteState
         _idleTime = Time.unscaledTime + _idleDuration;
     }
 
+    public override Vector3? GetTargetPosition(Creature creature)
+    {
+        return null;
+    }
+
     public override void OnUpdate(Creature creature)
     {
         
