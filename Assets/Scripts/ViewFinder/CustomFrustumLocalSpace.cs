@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class CustomFrustumLocalSpace : MonoBehaviour
@@ -162,7 +163,7 @@ public class CustomFrustumLocalSpace : MonoBehaviour
         StartCoroutine(TestCut(isTakingPicture));
     }
 
-    IEnumerator TestCut(bool isTakingPicture) {
+    async IAsyncEnumerator<T> TestCut(bool isTakingPicture) {
 
         /* trick to give time to unity to detect collisions \ 1 frame isn't enough */
         yield return null;
@@ -184,7 +185,13 @@ public class CustomFrustumLocalSpace : MonoBehaviour
             {
                 var initialName = obj.name;
                 obj.name = obj.name + "/cut";
-                var original = Instantiate(obj);
+                GameObject original = Instantiate(obj);
+
+                /*AsyncInstantiateOperation<GameObject> t = InstantiateAsync(obj);
+
+                yield return t.WaitForCompletion();
+
+                original = t.Result[0];*/
                 original.transform.position = obj.transform.position;
                 original.transform.rotation = obj.transform.rotation;
                 original.name = initialName;

@@ -72,7 +72,7 @@ public class Player : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.G))
         {
-            StartCoroutine(PlaceItem());
+            //StartCoroutine(PlaceItem());
         }
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
@@ -81,10 +81,16 @@ public class Player : MonoBehaviour
             else
                 IdleFilm();
         }
+        if (Input.GetKeyDown(KeyCode.Mouse1))
+        {
+            if (isInspecting)
+                StartCoroutine(PlaceItem());
+
+        }
         if (Input.GetKeyDown(KeyCode.E))
         {
             PickupItem();
-            UseFilm();
+            //UseFilm();
         }
 
         PickupDetection();
@@ -171,6 +177,9 @@ public class Player : MonoBehaviour
         if (heldItem != null)
             yield break;
 
+        Tween.LocalPosition(filmParent, inspectFilmPos, 0.1f, Ease.OutExpo);
+        Tween.LocalRotation(filmParent, inspectFilmRotation, 0.1f, Ease.OutExpo);
+
         polaroidCamera.gameObject.SetActive(true);
 
         yield return new WaitForSeconds(0.1f);
@@ -187,6 +196,10 @@ public class Player : MonoBehaviour
         frustrum.Cut(true);
 
         film.SetFrustum(frustrum);
+
+        yield return new WaitForSeconds(0.1f);
+
+        IdleFilm();
     }
 
     IEnumerator PlaceItem()
