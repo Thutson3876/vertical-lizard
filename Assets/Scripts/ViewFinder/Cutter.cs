@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using UnityEngine;
 
 /*
@@ -19,8 +20,16 @@ public class Cutter : MonoBehaviour
 
         isBusy = true;
 
-        Plane cutPlane = new Plane(originalGameObject.transform.InverseTransformDirection(-cutNormal), originalGameObject.transform.InverseTransformPoint(contactPoint));
-        originalMesh = originalGameObject.GetComponent<MeshFilter>().mesh;
+        Plane cutPlane;
+        try
+        {
+            cutPlane = new Plane(originalGameObject.transform.InverseTransformDirection(-cutNormal), originalGameObject.transform.InverseTransformPoint(contactPoint));
+            originalMesh = originalGameObject.GetComponent<MeshFilter>().mesh;
+        }
+        catch{
+            Debug.LogError("Need mesh to cut");
+            return null;
+        }
 
         if (originalMesh == null)
         {

@@ -25,8 +25,8 @@ public class PlayerController : MonoBehaviour
         characterController = GetComponent<CharacterController>();
         Cursor.lockState = CursorLockMode.Locked;
         isPlayerActive = true;
-        ppProfile.sharedProfile.TryGet<LensDistortion>(out lensDistortion);
-        lensDistortion.active = false;
+        //ppProfile.sharedProfile.TryGet<LensDistortion>(out lensDistortion);
+        //lensDistortion.active = false;
     }
 
     void Update()
@@ -120,6 +120,9 @@ public class PlayerController : MonoBehaviour
     }
 
     void EndGame() {
+        if (lensDistortion == null)
+            return;
+
         if (!lensDistortion.active)
         {
             lensDistortion.active = true;
@@ -132,12 +135,12 @@ public class PlayerController : MonoBehaviour
         while (x < 0.5f)
         {
             x+=Time.deltaTime / 6;
-            lensDistortion.intensity.value = x;
+            //lensDistortion.intensity.value = x;
             yield return null;
         }
     }
 
     void OnDisable() {
-        lensDistortion.intensity.value = 0;
+        //lensDistortion.intensity.value = 0;
     }
 }
