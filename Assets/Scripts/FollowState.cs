@@ -37,6 +37,10 @@ public class FollowState : FiniteState
             Debug.Log("GO");
             _currentTarget = hit.position;
         }
+        else
+        {
+            _currentTarget = creature.Target.position;
+        }
     }
 
     public override Vector3? GetTargetPosition(Creature creature)

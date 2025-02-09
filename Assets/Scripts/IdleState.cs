@@ -6,6 +6,16 @@ public class IdleState : FiniteState
 {
     private float _idleDuration = 5f;
     private float _idleTime = 0f;
+
+    public IdleState(float time)
+    {
+        _idleDuration = time;
+    }
+
+    public IdleState()
+    {
+        
+    }
     public override void OnEnter(Creature creature, FiniteState previousState)
     {
         _idleTime = Time.unscaledTime + _idleDuration;

@@ -13,11 +13,13 @@ public class Creature : MonoBehaviour
     private static readonly int Scream = Animator.StringToHash("Scream");
     [SerializeField] private int tickRate = 30;
     [SerializeField] private Transform targetTr;
-    [SerializeField] private float creatureSpeed = 3f;
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private float targetLostTime = 5f;
     [SerializeField] private float minTargetDistance = 3f;
     [SerializeField] private float fov = 110f;
+    [SerializeField] private float initialIdleTime = 5f;
+    [ShowInInspector]
+    private string _currentStateName => _currentState != null ? _currentState.GetType().Name : "null";
     public Transform Target { get; set; }
     private FiniteState _currentState;
     private float _timeSinceLastTick = 0f;
@@ -28,10 +30,10 @@ public class Creature : MonoBehaviour
 
     private void Awake()
     {
-        _currentState = new IdleState();
         _tickTime = 1f / tickRate;
         _timeSinceLastTick = Time.unscaledTime + _tickTime;
         _timeSinceTarget = Time.unscaledTime + targetLostTime;
+        _currentState = new IdleState(200000);
         _currentState.OnEnter(this, null);
         _rigidbody = GetComponent<Rigidbody>();
         _animator = GetComponentInChildren<Animator>();
@@ -49,11 +51,11 @@ public class Creature : MonoBehaviour
             return;
         }
 
-        LookForTarget();
         _animator.SetFloat(WalkBlend, Mathf.InverseLerp(0f, agent.speed, agent.velocity.magnitude));
         _currentState.OnTick(this);
         _timeSinceLastTick = Time.unscaledTime + _tickTime;
     }
+
 
     public void PlayDeathAnimation()
     {
@@ -76,7 +78,16 @@ public class Creature : MonoBehaviour
         if (target != null)
         {
             transform.LookAt(target.Value, Vector3.up);
-            agent.SetDestination(target.Value);
+            if (agent.SetDestination(target.Value))
+            {
+                agent.enabled = true;
+            }
+            else
+            {
+                agent.enabled = false;
+                _rigidbody.MovePosition(Vector3.MoveTowards(_rigidbody.position, target.Value,
+                    Time.deltaTime * agent.speed));
+            }
         }
     }
 
@@ -86,6 +97,11 @@ public class Creature : MonoBehaviour
         _currentState.OnExit(this, state);
         _currentState = state;
         _currentState.OnEnter(this, prevState);
+    }
+
+    public void SetSeePlayer(bool seePlayer)
+    {
+        Target = seePlayer ? targetTr : null;
     }
 
     private void LookForTarget()
