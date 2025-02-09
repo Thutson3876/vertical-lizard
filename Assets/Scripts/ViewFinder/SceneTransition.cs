@@ -1,6 +1,7 @@
 using PrimeTween;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,8 +11,12 @@ public class SceneTransition : MonoBehaviour
 
     [SerializeField]
     Image coverage;
+    [SerializeField]
+    TMP_Text loadingText;
 
     private int frustumCounter = 0;
+
+    public bool CanMove { get; private set; } = false;
 
     private void Awake()
     {
@@ -34,13 +39,18 @@ public class SceneTransition : MonoBehaviour
         {
             Tween.Custom(1f, 0f, 1f, (value) => { 
                 Color c = coverage.color;
+                Color c2 = loadingText.color;
                 c.a = value;
-                coverage.color = c; });
+                c2.a = value;
+                coverage.color = c;
+                loadingText.color = c2;
+            });
         }
     }
 
     public void PrintCounter()
     {
         print("Counter: " +  frustumCounter);
+        loadingText.text = "Loading... " + frustumCounter;
     }
 }
