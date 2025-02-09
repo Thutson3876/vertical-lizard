@@ -1,4 +1,5 @@
 using System;
+using PrimeTween;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -30,7 +31,10 @@ public class FollowState : FiniteState
         {
             Debug.Log("kill");
             creature.PlayAttackAnimation();
-            PlayerHealth.Instance.TakeDamage();
+            Tween.Delay(0.5f, () =>
+            {
+                PlayerHealth.Instance.TakeDamage();
+            });
             creature.ChangeState(new IdleState(creature.idleTimeAfterAttacking));
         }
         
