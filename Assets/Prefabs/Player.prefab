@@ -412,7 +412,7 @@ MonoBehaviour:
   isMoving: 0
   filmPos: {fileID: 412332468512356745}
   ppProfile: {fileID: 0}
-  jumpHeight: 0.5
+  jumpHeight: 1
 --- !u!114 &6023121417069575415
 MonoBehaviour:
   m_ObjectHideFlags: 0
