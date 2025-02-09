@@ -52,6 +52,9 @@ public class Player : MonoBehaviour
     bool isInspecting = false;
 
 
+    [SerializeField] private AudioClip inspectClip;
+
+
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
@@ -169,6 +172,7 @@ public class Player : MonoBehaviour
 
         Tween.LocalPosition(filmParent, inspectFilmPos, 0.5f, Ease.OutExpo);
         Tween.LocalRotation(filmParent, inspectFilmRotation, 0.5f, Ease.OutExpo);
+        
     }
 
     private void IdleFilm()
