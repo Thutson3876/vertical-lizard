@@ -13,6 +13,8 @@ public class Blackhole : MonoBehaviour
     [SerializeField]
     int nextSceneBuildIdx = 1;
 
+    [SerializeField] private FlashbangVolume flashbangVolume;
+
     int score = 0;
 
     private void Start()
@@ -36,11 +38,15 @@ public class Blackhole : MonoBehaviour
         Destroy(other.gameObject);
 
         if (score >= 4)
-            Transition();
+        {
+            flashbangVolume.StartFlashbang();
+            StartCoroutine(nameof(Transition));
+        }
     }
 
-    private void Transition()
+    private IEnumerator Transition()
     {
+        yield return new WaitForSeconds(2.0F);
         SceneManager.LoadScene(nextSceneBuildIdx);
     }
 }
