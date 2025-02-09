@@ -53,6 +53,8 @@ public class Player : MonoBehaviour
 
 
     [SerializeField] private AudioClip inspectClip;
+    [SerializeField] private AudioClip pickupClip;
+    [SerializeField] private AudioClip dropClip;
 
 
     private void Awake()
@@ -147,6 +149,8 @@ public class Player : MonoBehaviour
 
         Tween.LocalPosition(heldItem.transform, Vector3.zero, 0.5f, Ease.OutExpo);
         Tween.LocalRotation(heldItem.transform, Vector3.zero, 0.5f, Ease.OutExpo);
+        AudioManager.PlaySound(pickupClip, transform.position, 0.5f, 1f);
+
     }
 
     private void UseFilm()
@@ -172,7 +176,7 @@ public class Player : MonoBehaviour
 
         Tween.LocalPosition(filmParent, inspectFilmPos, 0.5f, Ease.OutExpo);
         Tween.LocalRotation(filmParent, inspectFilmRotation, 0.5f, Ease.OutExpo);
-        
+        AudioManager.PlaySound(inspectClip, transform.position, 0.5f, 1f);
     }
 
     private void IdleFilm()
@@ -184,6 +188,7 @@ public class Player : MonoBehaviour
 
         Tween.LocalPosition(filmParent, idleFilmPos, 0.5f, Ease.OutExpo);
         Tween.LocalRotation(filmParent, idleFilmRotation, 0.5f, Ease.OutExpo);
+        AudioManager.PlaySound(inspectClip, transform.position, 0.5f, 1f);
     }
 
     IEnumerator Capture()
@@ -234,6 +239,7 @@ public class Player : MonoBehaviour
         Tween.LocalRotation(filmParent, idleFilmRotation, 0.1f, Ease.OutExpo);
 
         Destroy(heldItem.gameObject);
+        AudioManager.PlaySound(dropClip, transform.position, 0.5f, 1f);
 
         heldItem = null;
     }

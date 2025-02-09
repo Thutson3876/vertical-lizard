@@ -9,17 +9,32 @@ public class AudioManager : MonoBehaviour
     {
         //handle lack of domain reloading lol
         AudioSources.Clear();
+        mainMusic.Play();
     }
 
     private const float MinRange = 0.5f;
     private const float MaxRange = 25f;
     private static readonly List<AudioSource> AudioSources = new List<AudioSource>();
+    public AudioSource mainMusic;
+    public float loopPoint = 50f;
 
     private void OnDestroy()
     {
         foreach (var audioSource in AudioSources)
         {
             Destroy(audioSource);
+        }
+    }
+
+    private void Update()
+    {
+        if (Mathf.Approximately(
+                mainMusic.time,
+                mainMusic.clip.length))
+        {
+            mainMusic.Pause();
+            mainMusic.time = loopPoint;
+            mainMusic.Play();
         }
     }
 

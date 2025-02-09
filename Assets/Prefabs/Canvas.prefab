@@ -2809,6 +2809,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   deathMenu: {fileID: 2932260294906782786}
   pauseMenu: {fileID: 3101817356897014612}
+  reloadClip: {fileID: 8300000, guid: e4b8d4cf2a57f934f9b0773cdbad88dc, type: 3}
 --- !u!1 &9074427983648370679
 GameObject:
   m_ObjectHideFlags: 0

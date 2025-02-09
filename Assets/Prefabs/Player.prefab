@@ -442,6 +442,9 @@ MonoBehaviour:
   idleFilmRotation: {x: 90, y: 173.4292, z: 0}
   inspectFilmPos: {x: 0, y: 0, z: 0.435}
   inspectFilmRotation: {x: 90, y: -90, z: 90}
+  inspectClip: {fileID: 8300000, guid: fea1c41fe1f78ce43a33c13283e7fc6a, type: 3}
+  pickupClip: {fileID: 8300000, guid: 8db731f30f14b494aa38d30ce5c96270, type: 3}
+  dropClip: {fileID: 8300000, guid: 8db731f30f14b494aa38d30ce5c96270, type: 3}
 --- !u!143 &2689366448665161548
 CharacterController:
   m_ObjectHideFlags: 0
@@ -501,6 +504,7 @@ MonoBehaviour:
   grabLayers:
     serializedVersion: 2
     m_Bits: 1024
+  grabSound: {fileID: 8300000, guid: 8db731f30f14b494aa38d30ce5c96270, type: 3}
 --- !u!114 &2844174876444103528
 MonoBehaviour:
   m_ObjectHideFlags: 0
