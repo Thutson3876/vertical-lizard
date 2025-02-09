@@ -12,12 +12,18 @@ Shader "Dither 3D/Cutout"
     {
         _Color ("Color", Color) = (1,1,1,1)
         _MainTex ("Albedo", 2D) = "white" {}
-        _Cutoff ("Alpha Cutoff", Range(0,1)) = 0.5
         _BumpMap ("Normal Map", 2D) = "bump" {}
+        _MaskMap ("Mask Map", 2D) = "white" {}
+        [Toggle] _UseMaskMap("Use Mask Map?", Float) = 0.0
         _EmissionMap ("Emission", 2D) = "white" {}
 		_EmissionColor ("Emission Color", Color) = (0,0,0,0)
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
+        _Cutoff ("Alpha Cutoff", Range(0,1)) = 0.5
+        
+        _DitherColor("Dither Color", Color) = (1, 1, 1, 1)
+        _FadeInColor("Fade In Color", Range(0,1)) = 0.5
+        _PostExposure("Post Exposure", Float) = 1.0
 
         [Header(Dither Input Brightness)]
         _InputExposure ("Exposure", Range(0,5)) = 1
@@ -34,7 +40,7 @@ Shader "Dither 3D/Cutout"
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType" = "Transparent" }
         LOD 200
 
         CGPROGRAM
@@ -54,6 +60,13 @@ Shader "Dither 3D/Cutout"
         sampler2D _MainTex;
         sampler2D _BumpMap;
         sampler2D _EmissionMap;
+        sampler2D _MaskMap;
+
+        float _FadeInColor;
+        float _PostExposure;
+        float4 _DitherColor;
+
+        float _UseMaskMap;
 
         struct Input
         {
@@ -70,7 +83,8 @@ Shader "Dither 3D/Cutout"
         fixed4 _Color;
         fixed4 _EmissionColor;
 
-        void vert(inout appdata_full v, out Input o) {
+        void vert(inout appdata_full v, out Input o)
+        {
             UNITY_INITIALIZE_OUTPUT(Input, o);
             float4 clipPos = UnityObjectToClipPos(v.vertex);
             UNITY_TRANSFER_FOG(o, clipPos);
@@ -78,20 +92,43 @@ Shader "Dither 3D/Cutout"
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-            fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
+            float4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
+            
             o.Albedo = c.rgb;
             o.Normal = UnpackNormal (tex2D (_BumpMap, IN.uv_BumpMap));
-            o.Emission = tex2D (_EmissionMap, IN.uv_EmissionMap) * _EmissionColor;
+            o.Emission = tex2D(_EmissionMap, IN.uv_EmissionMap) * _EmissionColor;
 
-            o.Metallic = _Metallic;
-            o.Smoothness = _Glossiness;
+            float4 maskMap = tex2D(_MaskMap, IN.uv_MainTex);
+
+            if (_UseMaskMap == 0.0)
+            {
+                o.Metallic = _Metallic;
+                o.Smoothness = _Glossiness;
+            }
+            else
+            {
+                o.Metallic = maskMap.r;
+                o.Smoothness = maskMap.a;
+            }
+            
             o.Alpha = c.a;
         }
 
         void mycolor (Input IN, SurfaceOutputStandard o, inout fixed4 color)
         {
             UNITY_APPLY_FOG(IN.fogCoord, color);
-            color = GetDither3DColor(IN.uv_DitherTex, IN.screenPos, color);
+
+            float4 oldColor = color;
+            
+            color.r = GetDither3DColor(IN.uv_DitherTex, IN.screenPos, color.r);
+            color.g = GetDither3DColor(IN.uv_DitherTex, IN.screenPos, color.g);
+            color.b = GetDither3DColor(IN.uv_DitherTex, IN.screenPos, color.b);
+
+            color = lerp(color, oldColor, _FadeInColor);
+            color.a = o.Alpha;
+            
+            /*color = lerp(color, float4(o.Emission, color.a), _FadeInColor)
+                * _PostExposure;*/
         }
         ENDCG
     }

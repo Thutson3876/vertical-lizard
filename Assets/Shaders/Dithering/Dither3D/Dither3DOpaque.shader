@@ -94,7 +94,7 @@ Shader "Dither 3D/Opaque"
             float4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
             o.Albedo = c.rgb;
             o.Normal = UnpackNormal (tex2D (_BumpMap, IN.uv_BumpMap));
-            o.Emission = c.rgb;
+            o.Emission = tex2D(_EmissionMap, IN.uv_EmissionMap) * _EmissionColor;
 
             float4 maskMap = tex2D(_MaskMap, IN.uv_MainTex);
 
