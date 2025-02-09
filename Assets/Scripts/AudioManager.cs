@@ -14,9 +14,15 @@ public class AudioManager : MonoBehaviour
         var existingAudioManagers = GameObject.FindObjectsByType(
             typeof(AudioManager), FindObjectsSortMode.None);
 
-        if (existingAudioManagers.Length > 0)
+        if (existingAudioManagers.Length > 1)
         {
-            Destroy(gameObject);
+            foreach (var audioManager in existingAudioManagers)
+            {
+                if (audioManager != this)
+                {
+                    Destroy(audioManager);
+                }
+            }
         }
         
         DontDestroyOnLoad(this);
