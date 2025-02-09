@@ -56,7 +56,9 @@ MonoBehaviour:
   initialIdleTime: 5
   creatureSpeed: 3
   idleTimeAfterAttacking: 10
-  minPoint: {fileID: 0}
+  attackTime: 2.5
+  attackClip: {fileID: 8300000, guid: 283dd662c8fc69d409f909f5e4828336, type: 3}
+  roarClip: {fileID: 8300000, guid: 732e2ab51dfcf8b409a42ee191ad09da, type: 3}
 --- !u!54 &4809517788581390644
 Rigidbody:
   m_ObjectHideFlags: 0

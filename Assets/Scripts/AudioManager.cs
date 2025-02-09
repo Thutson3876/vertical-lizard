@@ -1,45 +1,80 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(AudioSource))]
 public class AudioManager : MonoBehaviour
 {
-    private AudioSource _audioSource;
-
-    public float loopPoint = 0.0F;
-    
-    void Start()
+    private void Awake()
     {
-        var existingAudioManagers = GameObject.FindObjectsByType(
-            typeof(AudioManager), FindObjectsSortMode.None);
-
-        if (existingAudioManagers.Length > 1)
-        {
-            foreach (var audioManager in existingAudioManagers)
-            {
-                if (audioManager != this)
-                {
-                    Destroy(audioManager);
-                }
-            }
-        }
-        
-        DontDestroyOnLoad(this);
-        
-        _audioSource = GetComponent<AudioSource>();
-        _audioSource.Play();
+        //handle lack of domain reloading lol
+        AudioSources.Clear();
+        mainMusic.Play();
     }
 
-    void Update()
+    private const float MinRange = 0.5f;
+    private const float MaxRange = 25f;
+    private static readonly List<AudioSource> AudioSources = new List<AudioSource>();
+    public AudioSource mainMusic;
+    public float loopPoint = 50f;
+
+    private void OnDestroy()
+    {
+        foreach (var audioSource in AudioSources)
+        {
+            Destroy(audioSource);
+        }
+    }
+
+    private void Update()
     {
         if (Mathf.Approximately(
-                _audioSource.time,
-                _audioSource.clip.length))
+                mainMusic.time,
+                mainMusic.clip.length))
         {
-            _audioSource.Pause();
-            _audioSource.time = loopPoint;
-            _audioSource.Play();
+            mainMusic.Pause();
+            mainMusic.time = loopPoint;
+            mainMusic.Play();
         }
+    }
+
+    public static void PlaySound(AudioClip clip, Vector3 position, float volume, float pitch)
+    {
+        var audioSource = CreateOrGetAudioSource();
+        audioSource.transform.position = position;
+        audioSource.clip = clip;
+        audioSource.pitch = pitch;
+        audioSource.volume = volume;
+        audioSource.Play();
+    }
+
+    private static AudioSource CreateOrGetAudioSource()
+    {
+        if (AudioSources.Count == 0)
+        {
+            return CreateAudioSource();
+        }
+
+        foreach (var source in AudioSources)
+        {
+            if (!source.isPlaying)
+            {
+                return source;
+            }
+        }
+
+        return CreateAudioSource();
+    }
+
+    private static AudioSource CreateAudioSource()
+    {
+        var gameObject = new GameObject("AudioSource");
+        var result = gameObject.AddComponent<AudioSource>();
+        result.spatialize = true;
+        result.spatialBlend = 1;
+        result.minDistance = MinRange;
+        result.maxDistance = MaxRange;
+        AudioSources.Add(result);
+        return result;
     }
 }

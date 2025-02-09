@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
     public bool isMoving;
     public Transform filmPos;
     public Volume ppProfile;
+    public AudioSource footStepAudio;
     
     private CharacterController characterController;
     private float verticalVelocity = 0.0f;
@@ -27,6 +28,7 @@ public class PlayerController : MonoBehaviour
         isPlayerActive = true;
         //ppProfile.sharedProfile.TryGet<LensDistortion>(out lensDistortion);
         //lensDistortion.active = false;
+        footStepAudio.loop = true;
     }
 
     void Update()
