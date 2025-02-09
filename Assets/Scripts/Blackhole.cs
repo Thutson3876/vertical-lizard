@@ -2,12 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Blackhole : MonoBehaviour
 {
     [SerializeField]
     Image[] uiImages;
+
+    [SerializeField]
+    int nextSceneBuildIdx = 1;
+
+    [SerializeField] private FlashbangVolume flashbangVolume;
 
     int score = 0;
 
@@ -30,5 +36,17 @@ public class Blackhole : MonoBehaviour
         uiImages[score - 1].enabled = true;
 
         Destroy(other.gameObject);
+
+        if (score >= 4)
+        {
+            flashbangVolume.StartFlashbang();
+            StartCoroutine(nameof(Transition));
+        }
+    }
+
+    private IEnumerator Transition()
+    {
+        yield return new WaitForSeconds(2.0F);
+        SceneManager.LoadScene(nextSceneBuildIdx);
     }
 }
