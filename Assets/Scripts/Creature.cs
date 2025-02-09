@@ -21,6 +21,8 @@ public class Creature : MonoBehaviour
     [SerializeField] private float creatureSpeed = 3.5f;
     public float idleTimeAfterAttacking = 10f;
     public float attackTime = 2.5f;
+    public AudioClip attackClip;
+    public AudioClip roarClip;
     [ShowInInspector]
     private string _currentStateName => _currentState != null ? _currentState.GetType().Name : "null";
     public Transform Target { get; set; }
@@ -102,6 +104,7 @@ public class Creature : MonoBehaviour
     public void PlayScreamAnimation()
     {
         _animator.SetTrigger(Scream);
+        AudioManager.PlaySound(roarClip, transform.position, 0.6f, 1f);
     }
 
     private void FixedUpdate()

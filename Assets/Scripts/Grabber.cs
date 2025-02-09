@@ -7,6 +7,7 @@ public class Grabber : MonoBehaviour
 {
     [SerializeField] private float maxGrabDistance = 5f;
     [SerializeField] private LayerMask grabLayers;
+    public AudioClip grabSound;
     private ConfigurableJoint _heldJoint;
     private Camera _cam;
     private float _holdDistance;
@@ -31,6 +32,7 @@ public class Grabber : MonoBehaviour
     private void Update()
     {
         _cameraRay = new Ray(_cam.transform.position, _cam.transform.forward);
+        
         if (!Input.GetKeyDown(KeyCode.E)) return;
         if (_currentHeldBody == null)
         {
@@ -55,6 +57,10 @@ public class Grabber : MonoBehaviour
 
     private void PickupObject(RaycastHit hit)
     {
+        if (_heldJoint != null)
+        {
+            Destroy(_heldJoint);
+        }
         _currentHeldBody = hit.rigidbody;
         _holdDistance = hit.distance;
         var anchor = hit.point;
@@ -73,6 +79,7 @@ public class Grabber : MonoBehaviour
         };
         _heldJoint.yDrive = _heldJoint.zDrive = _heldJoint.slerpDrive = _heldJoint.xDrive;
         _heldJoint.rotationDriveMode = RotationDriveMode.Slerp;
+        AudioManager.PlaySound(grabSound, transform.position, 0.8f, 1f);
     }
 
     private void ReleaseObject()
