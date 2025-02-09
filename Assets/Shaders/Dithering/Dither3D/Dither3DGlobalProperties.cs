@@ -8,6 +8,7 @@
 
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class OverridePropertyAttribute : PropertyAttribute { }
 
@@ -51,6 +52,9 @@ public class Dither3DGlobalProperties : MonoBehaviour
     
     [OverrideProperty] public float stretchSmoothness = 1;
     [HideInInspector] public bool stretchSmoothnessOverride;
+    
+    [OverrideProperty] [Range(0.0F, 1.0F)] public float colorFadeIn = 0.9F;
+    [HideInInspector] public bool colorFadeInOverride;
 
     [Header("Dots Scaling Behavior")]
     public bool scaleWithScreen = true;
@@ -134,6 +138,8 @@ public class Dither3DGlobalProperties : MonoBehaviour
             SetShaderOverride("_Contrast", dotContrast, ref changed);
         if (stretchSmoothnessOverride)
             SetShaderOverride("_StretchSmoothness", stretchSmoothness, ref changed);
+        if (colorFadeInOverride)
+            SetShaderOverride("_FadeInColor", colorFadeIn, ref changed);
 
         #if UNITY_EDITOR
         if (changed && saveInMaterials)
