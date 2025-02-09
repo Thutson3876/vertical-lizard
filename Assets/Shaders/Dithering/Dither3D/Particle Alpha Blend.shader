@@ -1,112 +1,139 @@
-// Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
+/*
+ * Copyright (c) 2025 Rune Skovbo Johansen
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 
-Shader "Dither 3D/Particles (Alpha Blended)" {
-Properties {
-    _TintColor ("Tint Color", Color) = (0.5,0.5,0.5,0.5)
-    _MainTex ("Particle Texture", 2D) = "white" {}
-    _InvFade ("Soft Particles Factor", Range(0.01,3.0)) = 1.0
+Shader "Dither 3D/Transparent"
+{
+    Properties
+    {
+        _Color ("Color", Color) = (1,1,1,1)
+        _MainTex ("Albedo", 2D) = "white" {}
+        _BumpMap ("Normal Map", 2D) = "bump" {}
+        _MaskMap ("Mask Map", 2D) = "white" {}
+        [Toggle] _UseMaskMap("Use Mask Map?", Float) = 0.0
+        _EmissionMap ("Emission", 2D) = "white" {}
+		_EmissionColor ("Emission Color", Color) = (0,0,0,0)
+        _Glossiness ("Smoothness", Range(0,1)) = 0.5
+        _Metallic ("Metallic", Range(0,1)) = 0.0
+        
+        _DitherColor("Dither Color", Color) = (1, 1, 1, 1)
+        _FadeInColor("Fade In Color", Range(0,1)) = 0.5
+        _PostExposure("Post Exposure", Float) = 1.0
 
-    [Header(Dither Input Brightness)]
-	_InputExposure ("Exposure", Range(0,5)) = 1
-	_InputOffset ("Offset", Range(-1,1)) = 0
-	
-	[Header(Dither Settings)]
-	_DitherTex ("Dither 3D Texture", 3D) = "white" {}
-	_Scale ("Dot Scale", Range(2,10)) = 5.0
-	_SizeVariability ("Dot Size Variability", Range(0,1)) = 0
-	_Contrast ("Dot Contrast", Range(0,2)) = 1
-	_StretchSmoothness ("Stretch Smoothness", Range(0,2)) = 1
-}
+        [Header(Dither Input Brightness)]
+        _InputExposure ("Exposure", Range(0,5)) = 1
+        _InputOffset ("Offset", Range(-1,1)) = 0
 
-Category {
-    Tags { "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" "PreviewType"="Plane" }
-    Blend SrcAlpha OneMinusSrcAlpha
-    ColorMask RGB
-    Cull Off Lighting Off ZWrite Off
-
-    SubShader {
-        Pass {
-
-            CGPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-            #pragma target 2.0
-            #pragma multi_compile_particles
-            #pragma multi_compile_fog
-            #pragma multi_compile __ DITHERCOL_GRAYSCALE DITHERCOL_RGB DITHERCOL_CMYK
-            #pragma multi_compile __ INVERSE_DOTS
-            #pragma multi_compile __ RADIAL_COMPENSATION
-            #pragma multi_compile __ QUANTIZE_LAYERS
-            #pragma multi_compile __ DEBUG_FRACTAL
-
-            #include "UnityCG.cginc"
-            #include "Dither3DInclude.cginc"
-
-            sampler2D _MainTex;
-            fixed4 _TintColor;
-
-            struct appdata_t {
-                float4 vertex : POSITION;
-                fixed4 color : COLOR;
-                float2 texcoord : TEXCOORD0;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
-            };
-
-            struct v2f {
-                float4 vertex : SV_POSITION;
-                fixed4 color : COLOR;
-                float2 texcoord : TEXCOORD0;
-                UNITY_FOG_COORDS(1)
-                float4 screenPos : TEXCOORD3;
-                #ifdef SOFTPARTICLES_ON
-                float4 projPos : TEXCOORD2;
-                #endif
-                UNITY_VERTEX_OUTPUT_STEREO
-            };
-
-            float4 _MainTex_ST;
-
-            v2f vert (appdata_t v)
-            {
-                v2f o;
-                UNITY_SETUP_INSTANCE_ID(v);
-                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-                o.vertex = UnityObjectToClipPos(v.vertex);
-                #ifdef SOFTPARTICLES_ON
-                o.projPos = ComputeScreenPos (o.vertex);
-                COMPUTE_EYEDEPTH(o.projPos.z);
-                #endif
-                o.color = v.color * _TintColor;
-                o.texcoord = TRANSFORM_TEX(v.texcoord,_MainTex);
-                UNITY_TRANSFER_FOG(o,o.vertex);
-                o.screenPos = ComputeScreenPos(o.vertex);
-                return o;
-            }
-
-            UNITY_DECLARE_DEPTH_TEXTURE(_CameraDepthTexture);
-            float _InvFade;
-
-            fixed4 frag (v2f i) : SV_Target
-            {
-                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
-
-                #ifdef SOFTPARTICLES_ON
-                float sceneZ = LinearEyeDepth (SAMPLE_DEPTH_TEXTURE_PROJ(_CameraDepthTexture, UNITY_PROJ_COORD(i.projPos)));
-                float partZ = i.projPos.z;
-                float fade = saturate (_InvFade * (sceneZ-partZ));
-                i.color.a *= fade;
-                #endif
-
-                fixed4 col = 2.0f * i.color * tex2D(_MainTex, i.texcoord);
-                col.a = saturate(col.a); // alpha should not have double-brightness applied to it, but we can't fix that legacy behavior without breaking everyone's effects, so instead clamp the output to get sensible HDR behavior (case 967476)
-
-                UNITY_APPLY_FOG(i.fogCoord, col);
-                col.rgb = GetDither3DColor(i.texcoord, i.screenPos, col).rgb;
-				col.a = GetDither3D(RotateUV(i.texcoord, float2(0.707, 0.707)), i.screenPos, col.a).x;
-                return col;
-            }
-            ENDCG
-        }
+        [Header(Dither Settings)]
+        [DitherPatternProperty] _DitherMode ("Pattern", Int) = 3
+        [HideInInspector] _DitherTex ("Dither 3D Texture", 3D) = "" {}
+        [HideInInspector] _DitherRampTex ("Dither Ramp Texture", 2D) = "white" {}
+        _Scale ("Dot Scale", Range(2,10)) = 5.0
+        _SizeVariability ("Dot Size Variability", Range(0,1)) = 0
+        _Contrast ("Dot Contrast", Range(0,2)) = 1
+        _StretchSmoothness ("Stretch Smoothness", Range(0,2)) = 1
     }
-}
+    SubShader
+    {
+        Tags { "RenderType" = "Transparent" }
+        LOD 200
+        
+        Blend SrcAlpha One
+        ColorMask RGB
+        Cull Off Lighting Off ZWrite Off
+
+        CGPROGRAM
+        // Physically based Standard lighting model, and enable shadows on all light types
+        #pragma surface surf Standard fullforwardshadows vertex:vert finalcolor:mycolor
+
+        #pragma target 3.5
+        #pragma multi_compile_fog
+        #pragma multi_compile __ DITHERCOL_GRAYSCALE DITHERCOL_RGB DITHERCOL_CMYK
+        #pragma multi_compile __ INVERSE_DOTS
+        #pragma multi_compile __ RADIAL_COMPENSATION
+        #pragma multi_compile __ QUANTIZE_LAYERS
+        #pragma multi_compile __ DEBUG_FRACTAL
+
+        #include "Dither3DInclude.cginc"
+
+        sampler2D _MainTex;
+        sampler2D _BumpMap;
+        sampler2D _EmissionMap;
+        sampler2D _MaskMap;
+
+        float _FadeInColor;
+        float _PostExposure;
+        float4 _DitherColor;
+
+        float _UseMaskMap;
+
+        struct Input
+        {
+            float2 uv_MainTex;
+            float2 uv_BumpMap;
+            float2 uv_EmissionMap;
+            float2 uv_DitherTex;
+            float4 screenPos;
+            UNITY_FOG_COORDS(4)
+        };
+
+        half _Glossiness;
+        half _Metallic;
+        fixed4 _Color;
+        fixed4 _EmissionColor;
+
+        void vert(inout appdata_full v, out Input o)
+        {
+            UNITY_INITIALIZE_OUTPUT(Input, o);
+            float4 clipPos = UnityObjectToClipPos(v.vertex);
+            UNITY_TRANSFER_FOG(o, clipPos);
+        }
+
+        void surf (Input IN, inout SurfaceOutputStandard o)
+        {
+            float4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
+            
+            o.Albedo = c.rgb;
+            o.Normal = UnpackNormal (tex2D (_BumpMap, IN.uv_BumpMap));
+            o.Emission = tex2D(_EmissionMap, IN.uv_EmissionMap) * _EmissionColor;
+
+            float4 maskMap = tex2D(_MaskMap, IN.uv_MainTex);
+
+            if (_UseMaskMap == 0.0)
+            {
+                o.Metallic = _Metallic;
+                o.Smoothness = _Glossiness;
+            }
+            else
+            {
+                o.Metallic = maskMap.r;
+                o.Smoothness = maskMap.a;
+            }
+            
+            o.Alpha = c.a * _Color.a;
+        }
+
+        void mycolor (Input IN, SurfaceOutputStandard o, inout fixed4 color)
+        {
+            UNITY_APPLY_FOG(IN.fogCoord, color);
+
+            float4 oldColor = color;
+            
+            color.r = GetDither3DColor(IN.uv_DitherTex, IN.screenPos, color.r);
+            color.g = GetDither3DColor(IN.uv_DitherTex, IN.screenPos, color.g);
+            color.b = GetDither3DColor(IN.uv_DitherTex, IN.screenPos, color.b);
+
+            color = lerp(color, oldColor, _FadeInColor);
+            color.a = o.Alpha;
+            
+            /*color = lerp(color, float4(o.Emission, color.a), _FadeInColor)
+                * _PostExposure;*/
+        }
+        ENDCG
+    }
+    FallBack "Diffuse"
 }
