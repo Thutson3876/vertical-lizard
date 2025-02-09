@@ -46,6 +46,7 @@ public class SceneTransition : MonoBehaviour
                 loadingText.color = c2;
             });
 
+            CanMove = true;
             for (int i = 0; i < transform.childCount; i++)
             {
                 transform.GetChild(i).gameObject.SetActive(false);

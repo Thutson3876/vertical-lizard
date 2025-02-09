@@ -31,6 +31,9 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (SceneTransition.Instance == null || !SceneTransition.Instance.CanMove)
+            return;
+
         if (isPlayerActive)
         {
             LookAround();

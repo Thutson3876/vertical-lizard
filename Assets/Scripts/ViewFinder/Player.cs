@@ -67,6 +67,9 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (SceneTransition.Instance == null || !SceneTransition.Instance.CanMove)
+            return;
+
         /*if(Input.GetKeyDown(KeyCode.F))
         {
             StartCoroutine(Capture());
