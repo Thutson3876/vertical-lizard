@@ -20,6 +20,7 @@ public class Creature : MonoBehaviour
     [SerializeField] private float initialIdleTime = 5f;
     [SerializeField] private float creatureSpeed = 3.5f;
     public float idleTimeAfterAttacking = 10f;
+    public float attackTime = 2.5f;
     [ShowInInspector]
     private string _currentStateName => _currentState != null ? _currentState.GetType().Name : "null";
     public Transform Target { get; set; }
