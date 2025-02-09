@@ -218,6 +218,9 @@ public class Player : MonoBehaviour
 
         yield return new WaitForSeconds(0.1f);
 
+        Tween.LocalPosition(filmParent, idleFilmPos, 0.1f, Ease.OutExpo);
+        Tween.LocalRotation(filmParent, idleFilmRotation, 0.1f, Ease.OutExpo);
+
         Destroy(heldItem.gameObject);
 
         heldItem = null;
