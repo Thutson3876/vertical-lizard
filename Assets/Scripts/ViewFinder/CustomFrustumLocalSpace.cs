@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -28,6 +29,9 @@ public class CustomFrustumLocalSpace : MonoBehaviour
     Vector3 forwardVector;
     bool isTakingPicture;
     GameObject ending;
+
+    public event Action CutStartEvent;
+    public event Action CutEndEvent;
 
     void Start()
     {
@@ -102,6 +106,8 @@ public class CustomFrustumLocalSpace : MonoBehaviour
 
     public void Cut(bool isTakingPic)
     {
+        SceneTransition.Instance.IncrementCounter();
+
         isTakingPicture = isTakingPic;
 
         //SETUP PHASE
@@ -160,7 +166,14 @@ public class CustomFrustumLocalSpace : MonoBehaviour
         topPrimitivePlaneMC.enabled = true;
         bottomPrimitivePlaneMC.enabled = true;
 
-        StartCoroutine(TestCut(isTakingPicture));
+        try
+        {
+            StartCoroutine(TestCut(isTakingPicture));
+        }
+        catch {
+            SceneTransition.Instance.DecrementCounter();
+        }
+        
     }
 
     IEnumerator TestCut(bool isTakingPicture) {
@@ -384,6 +397,8 @@ public class CustomFrustumLocalSpace : MonoBehaviour
 
             activeFilm.ActivateFilm();
         }
+
+        SceneTransition.Instance.DecrementCounter();
     }
 
     public void AddObjectToCut(GameObject toCut, int side)
