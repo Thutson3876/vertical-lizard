@@ -126,6 +126,8 @@ public class Player : MonoBehaviour
         currentPickable.enabled = false;
         heldItem = currentPickable.gameObject;
 
+        pickupText.text = "";
+        pickupPanel.enabled = false;
         currentPickable = null;
 
         isInspecting = false;
