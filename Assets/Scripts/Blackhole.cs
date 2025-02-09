@@ -2,12 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Blackhole : MonoBehaviour
 {
     [SerializeField]
     Image[] uiImages;
+
+    [SerializeField]
+    int nextSceneBuildIdx = 1;
 
     int score = 0;
 
@@ -30,5 +34,13 @@ public class Blackhole : MonoBehaviour
         uiImages[score - 1].enabled = true;
 
         Destroy(other.gameObject);
+
+        if (score >= 4)
+            Transition();
+    }
+
+    private void Transition()
+    {
+        SceneManager.LoadScene(nextSceneBuildIdx);
     }
 }
