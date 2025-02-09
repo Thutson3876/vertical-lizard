@@ -1124,12 +1124,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   jerryMessages:
   - '[Jerry the John]: Mmmm oh my sweet lord.....'
-  - '[Jerry the John]: Oh delightful! How''d you know cubes are my favorite?'
+  - '[Jerry the John]: Oh delightful! How''d you know little golden horses are my
+    favorite food!?'
   - '[Jerry the John]: Oh I love it. Almost as much as Surface Stable Fractal Dithering....'
   - '[Jerry the John]: Oh my god. Oh my sweet lord in heaven good googly moogly sweet
-    merciful son of a gun how I do love a cube oh I do I do I do love a cube. MMmm
-    mmm they call em cubes but they sure are a square meal! Can I bum a cigarette?'
-  - '[Jonky Jimbler]: Oh yes! Cube so good my name changed.'
+    merciful son of a gun how I do love a little golden horse oh I do I do I do love
+    a little golden horse. MMmm mmm they call em little golden horses but i''am so
+    hungry i could eat a horse!!!! Did you know you can live with only one kidney?'
+  - '[Jonky Jimbler]: Oh yes! little golden horse so good my name changed.'
   text: {fileID: 185132281573779567}
 --- !u!82 &7450953328024946752
 AudioSource:
