@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using SaintsField.Playa;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -28,7 +29,8 @@ public class Creature : MonoBehaviour
     private float _timeSinceTarget = 0f;
     private Rigidbody _rigidbody;
     private Animator _animator;
-
+    private Collider _collider;
+    private int _rbID;
     private void Awake()
     {
         _tickTime = 1f / tickRate;
@@ -41,6 +43,33 @@ public class Creature : MonoBehaviour
         if (targetTr == null)
         {
             targetTr = Camera.main.transform;
+        }
+        _collider = GetComponent<Collider>();
+        _collider.hasModifiableContacts = true;
+        Physics.ContactModifyEvent += PhysicsOnContactModifyEvent;
+        _rbID = _rigidbody.GetInstanceID();
+    }
+
+    private void OnDisable()
+    {
+        Physics.ContactModifyEvent -= PhysicsOnContactModifyEvent;
+    }
+
+    private void PhysicsOnContactModifyEvent(PhysicsScene arg1, NativeArray<ModifiableContactPair> pairs)
+    {
+        foreach (var pair in pairs)
+        {
+            if (pair.bodyInstanceID == _rbID || pair.otherBodyInstanceID == _rbID)
+            {
+                for (int i = 0; i < pair.contactCount; i++)
+                {
+                    if (pair.GetNormal(i).y > 0.65f)
+                    {
+                        pair.SetNormal(i, Vector3.up);
+                        // pair.IgnoreContact(i);
+                    }
+                }
+            }
         }
     }
 
