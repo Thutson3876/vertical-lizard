@@ -11,6 +11,14 @@ public class AudioManager : MonoBehaviour
     
     void Start()
     {
+        var existingAudioManagers = GameObject.FindObjectsByType(
+            typeof(AudioManager), FindObjectsSortMode.None);
+
+        if (existingAudioManagers.Length > 0)
+        {
+            Destroy(gameObject);
+        }
+        
         DontDestroyOnLoad(this);
         
         _audioSource = GetComponent<AudioSource>();
