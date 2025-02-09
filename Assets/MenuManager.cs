@@ -9,6 +9,7 @@ public class MenuManager : MonoBehaviour
     public static MenuManager Instance;
     [SerializeField] private GameObject deathMenu;
     [SerializeField] private GameObject pauseMenu;
+    [SerializeField] private AudioClip reloadClip;
     private void Awake()
     {
         Instance = this;
@@ -41,6 +42,7 @@ public class MenuManager : MonoBehaviour
     
     public void ReloadScene()
     {
+        AudioSource.PlayClipAtPoint(reloadClip, transform.position);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 

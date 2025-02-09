@@ -35,6 +35,7 @@ public class FollowState : FiniteState
             {
                 if (Vector3.Distance(creature.Target.position, creature.transform.position) < 2.5f)
                 {
+                    AudioManager.PlaySound(creature.attackClip, creature.transform.position, 0.6f, 1f);
                     PlayerHealth.Instance.TakeDamage();
                 }
             });
