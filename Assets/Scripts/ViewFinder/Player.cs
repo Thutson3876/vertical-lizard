@@ -1,13 +1,16 @@
+using PrimeTween;
 using System.Collections;
-using System.Collections.Generic;
+using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField]
-    GameObject viewFinder;
+    [Header("Assignments")]
     [SerializeField]
     CustomFrustumLocalSpace frustrum;
+    [Space]
     [SerializeField]
     GameObject filmPrefab;
     [SerializeField]
@@ -15,44 +18,239 @@ public class Player : MonoBehaviour
     [SerializeField]
     Camera polaroidCamera;
 
+    [SerializeField]
+    LayerMask pickupLayer;
+
+    [Header("HUD")]
+    [SerializeField]
+    float reach = 2;
+    [SerializeField]
+    Image pickupPanel;
+    [SerializeField]
+    TMP_Text pickupText;
+
+    Collider currentPickable = null;
+    GameObject heldItem = null;
+
+    [Header("Film Position Presets")]
+    [SerializeField]
+    Vector3 idleFilmPos;
+    [SerializeField]
+    Vector3 idleFilmRotation;
+    [Space]
+    [SerializeField]
+    Vector3 inspectFilmPos;
+    [SerializeField]
+    Vector3 inspectFilmRotation;
+
+    CharacterController characterController;
+    Vector3 storedPos = Vector3.zero;
+    float fallingDuration = 3;
+    float currentFallTime = 0;
+
+    bool isInspecting = false;
+
+
+    private void Awake()
+    {
+        characterController = GetComponent<CharacterController>();
+    }
 
     private void Start()
     {
-        filmPrefab.SetActive(false);
+        IdleFilm();
+
+        StartCoroutine(GroundCheck());
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Q))
+        if(Input.GetKeyDown(KeyCode.F))
         {
-            print("Q");
             StartCoroutine(Capture());
-            
+        }
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            //StartCoroutine(PlaceItem());
+        }
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            if(!isInspecting)
+                InspectFilm();
+            else
+                IdleFilm();
+        }
+        if (Input.GetKeyDown(KeyCode.Mouse1))
+        {
+            if (isInspecting)
+                StartCoroutine(PlaceItem());
+
         }
         if (Input.GetKeyDown(KeyCode.E))
         {
-            print("E");
-            StartCoroutine(Place());
+            PickupItem();
+            //UseFilm();
         }
+
+        PickupDetection();
+    }
+
+    private void PickupDetection()
+    {
+        if (heldItem != null)
+            return;
+
+        RaycastHit hit;
+
+        if(!Physics.Raycast(polaroidCamera.transform.position, polaroidCamera.transform.forward, out hit, reach, pickupLayer))
+        {
+            pickupText.text = "";
+            pickupPanel.enabled = false;
+            currentPickable = null;
+            return;
+        }
+
+        if (!pickupPanel.enabled)
+            pickupPanel.enabled = true;
+
+        currentPickable = hit.collider;
+        pickupText.text = "E [" + hit.collider.name + "]";
+    }
+
+    private void PickupItem()
+    {
+        if (currentPickable == null || heldItem != null)
+            return;
+
+        currentPickable.enabled = false;
+        heldItem = currentPickable.gameObject;
+
+        pickupText.text = "";
+        pickupPanel.enabled = false;
+        currentPickable = null;
+
+        isInspecting = false;
+
+        heldItem.transform.parent = filmParent.transform;
+
+        Tween.LocalPosition(heldItem.transform, Vector3.zero, 0.5f, Ease.OutExpo);
+        Tween.LocalRotation(heldItem.transform, Vector3.zero, 0.5f, Ease.OutExpo);
+    }
+
+    private void UseFilm()
+    {
+        if (heldItem == null)
+            return;
+
+        if (!heldItem.TryGetComponent<CustomFrustumLocalSpace>(out var space))
+            return;
+
+        space.Cut(false);
+
+        Destroy(heldItem);
+        heldItem = null;
+    }
+
+    private void InspectFilm()
+    {
+        if (heldItem == null)
+            return;
+
+        isInspecting = true;
+
+        Tween.LocalPosition(filmParent, inspectFilmPos, 0.5f, Ease.OutExpo);
+        Tween.LocalRotation(filmParent, inspectFilmRotation, 0.5f, Ease.OutExpo);
+    }
+
+    private void IdleFilm()
+    {
+        if (heldItem == null)
+            return;
+
+        isInspecting = false;
+
+        Tween.LocalPosition(filmParent, idleFilmPos, 0.5f, Ease.OutExpo);
+        Tween.LocalRotation(filmParent, idleFilmRotation, 0.5f, Ease.OutExpo);
     }
 
     IEnumerator Capture()
     {
+        if (heldItem != null)
+            yield break;
+
+        Tween.LocalPosition(filmParent, inspectFilmPos, 0.1f, Ease.OutExpo);
+        Tween.LocalRotation(filmParent, inspectFilmRotation, 0.1f, Ease.OutExpo);
+
         polaroidCamera.gameObject.SetActive(true);
 
-        yield return new WaitForSeconds(.1f);
+        yield return new WaitForSeconds(0.1f);
 
-        filmPrefab.SetActive(true);
+        GameObject obj = Instantiate(filmPrefab, filmParent);
+        obj.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.Euler(Vector3.zero));
+
+        Film film = obj.GetComponent<Film>();
+
+        heldItem = obj;
+
         polaroidCamera.gameObject.SetActive(false);
-
+        
         frustrum.Cut(true);
+
+        film.SetFrustum(frustrum);
+
+        yield return new WaitForSeconds(0.1f);
+
+        IdleFilm();
     }
 
-    IEnumerator Place()
+    IEnumerator PlaceItem()
     {
-        yield return new WaitForSeconds(.1f);
-        filmPrefab.SetActive(false);
-        frustrum.Cut(false);
+        if (heldItem == null)
+            yield break;
+
+        Film film = heldItem.GetComponent<Film>();
+
+        if (film == null)
+            yield break;
+
+        film.Cut(polaroidCamera.transform);
+
+        yield return new WaitForSeconds(0.1f);
+
+        Destroy(heldItem.gameObject);
+
+        heldItem = null;
+    }
+
+    IEnumerator GroundCheck()
+    {
+        float duration = 1;
+        WaitForSeconds waitTime = new(duration);
+        while (enabled)
+        {
+            if(Physics.Raycast(transform.position, Vector2.down, 2f))
+            {
+                storedPos = transform.position;
+                currentFallTime = 0;
+            }
+            else if (characterController.velocity.y < 0)
+            {
+                currentFallTime += duration;
+            }
+
+            if (currentFallTime > fallingDuration)
+            {
+                characterController.enabled = false;
+
+                transform.position = storedPos;
+
+                currentFallTime = 0;
+
+                characterController.enabled = true;
+            }
+
+            yield return waitTime; 
+        }
     }
 }
