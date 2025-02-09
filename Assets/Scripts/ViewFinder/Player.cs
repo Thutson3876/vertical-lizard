@@ -82,14 +82,14 @@ public class Player : MonoBehaviour
         {
             ReloadScene();
         }
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        if (Input.GetKeyDown(KeyCode.Mouse1))
         {
             if(!isInspecting)
                 InspectFilm();
             else
                 IdleFilm();
         }
-        if (Input.GetKeyDown(KeyCode.Mouse1))
+        if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             if (isInspecting)
                 StartCoroutine(PlaceItem());
