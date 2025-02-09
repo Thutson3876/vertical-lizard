@@ -26,21 +26,15 @@ public class FollowState : FiniteState
             creature.ChangeState(new IdleState());
             return;
         }
-        if (Vector3.SqrMagnitude(creature.transform.position.ToXZ() - creature.Target.position.ToXZ()) < 0.1f * 0.1f)
+        if (Vector3.Distance(creature.Target.position, creature.transform.position) < 2.5f)
         {
             Debug.Log("kill");
             creature.PlayAttackAnimation();
+            PlayerHealth.Instance.TakeDamage();
+            creature.ChangeState(new IdleState(creature.idleTimeAfterAttacking));
         }
-
-        if (NavMesh.SamplePosition(creature.Target.position, out var hit, 1f, 1))
-        {
-            Debug.Log("GO");
-            _currentTarget = hit.position;
-        }
-        else
-        {
-            _currentTarget = creature.Target.position;
-        }
+        
+        _currentTarget = creature.Target.position;
     }
 
     public override Vector3? GetTargetPosition(Creature creature)

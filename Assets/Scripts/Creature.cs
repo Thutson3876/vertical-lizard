@@ -13,11 +13,12 @@ public class Creature : MonoBehaviour
     private static readonly int Scream = Animator.StringToHash("Scream");
     [SerializeField] private int tickRate = 30;
     [SerializeField] private Transform targetTr;
-    [SerializeField] private NavMeshAgent agent;
     [SerializeField] private float targetLostTime = 5f;
     [SerializeField] private float minTargetDistance = 3f;
     [SerializeField] private float fov = 110f;
     [SerializeField] private float initialIdleTime = 5f;
+    [SerializeField] private float creatureSpeed = 3.5f;
+    public float idleTimeAfterAttacking = 10f;
     [ShowInInspector]
     private string _currentStateName => _currentState != null ? _currentState.GetType().Name : "null";
     public Transform Target { get; set; }
@@ -51,7 +52,7 @@ public class Creature : MonoBehaviour
             return;
         }
 
-        _animator.SetFloat(WalkBlend, Mathf.InverseLerp(0f, agent.speed, agent.velocity.magnitude));
+        _animator.SetFloat(WalkBlend, Mathf.InverseLerp(0f, creatureSpeed, _rigidbody.velocity.magnitude));
         _currentState.OnTick(this);
         _timeSinceLastTick = Time.unscaledTime + _tickTime;
     }
@@ -77,17 +78,12 @@ public class Creature : MonoBehaviour
         var target = _currentState.GetTargetPosition(this);
         if (target != null)
         {
-            transform.LookAt(target.Value, Vector3.up);
-            if (agent.SetDestination(target.Value))
-            {
-                agent.enabled = true;
-            }
-            else
-            {
-                agent.enabled = false;
-                _rigidbody.MovePosition(Vector3.MoveTowards(_rigidbody.position, target.Value,
-                    Time.deltaTime * agent.speed));
-            }
+            var lookPos = target.Value - transform.position;
+            lookPos.y = 0f;
+            transform.rotation = Quaternion.LookRotation(lookPos.normalized, Vector3.up);
+            var targetVel = (target.Value - transform.position).normalized * creatureSpeed;
+            targetVel.y = _rigidbody.velocity.y;
+            _rigidbody.velocity = targetVel;
         }
     }
 
@@ -98,7 +94,7 @@ public class Creature : MonoBehaviour
         _currentState = state;
         _currentState.OnEnter(this, prevState);
     }
-
+    
     public void SetSeePlayer(bool seePlayer)
     {
         Target = seePlayer ? targetTr : null;

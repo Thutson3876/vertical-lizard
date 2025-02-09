@@ -35,10 +35,6 @@ public class IdleState : FiniteState
         {
             creature.ChangeState(new FollowState());
         }
-        else
-        {
-            creature.ChangeState(new WanderState());
-        }
         _idleTime = Time.unscaledTime + _idleDuration;
     }
 
