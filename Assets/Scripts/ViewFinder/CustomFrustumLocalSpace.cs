@@ -1,7 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.AI.Navigation;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class CustomFrustumLocalSpace : MonoBehaviour
 {
@@ -28,6 +31,9 @@ public class CustomFrustumLocalSpace : MonoBehaviour
     Vector3 forwardVector;
     bool isTakingPicture;
     GameObject ending;
+
+    public event Action CutStartEvent;
+    public event Action CutEndEvent;
 
     void Start()
     {
@@ -102,6 +108,8 @@ public class CustomFrustumLocalSpace : MonoBehaviour
 
     public void Cut(bool isTakingPic)
     {
+        SceneTransition.Instance.IncrementCounter();
+
         isTakingPicture = isTakingPic;
 
         //SETUP PHASE
@@ -160,7 +168,14 @@ public class CustomFrustumLocalSpace : MonoBehaviour
         topPrimitivePlaneMC.enabled = true;
         bottomPrimitivePlaneMC.enabled = true;
 
-        StartCoroutine(TestCut(isTakingPicture));
+        try
+        {
+            StartCoroutine(TestCut(isTakingPicture));
+        }
+        catch {
+            SceneTransition.Instance.DecrementCounter();
+        }
+        
     }
 
     IEnumerator TestCut(bool isTakingPicture) {
@@ -382,8 +397,10 @@ public class CustomFrustumLocalSpace : MonoBehaviour
             foreach(var obj in objectsInFrustum)
                 Destroy(obj);
 
-            activeFilm.ActivateFilm();
+            yield return activeFilm.ActivateFilm();
         }
+
+        SceneTransition.Instance.DecrementCounter();
     }
 
     public void AddObjectToCut(GameObject toCut, int side)
@@ -547,10 +564,30 @@ public class PolaroidFilm {
         }
     }
 
-    public void ActivateFilm() {
+    public AsyncOperation ActivateFilm() {
+        GameObject filmGroup = new GameObject("filmGroup");
+        GameObject creature = null;
         for (int i = 0; i < placeHolders.Count; i++) {
-            placeHolders[i].transform.SetParent(null);
+            placeHolders[i].transform.SetParent(filmGroup.transform, true);
             placeHolders[i].SetActive(true);
+            if (placeHolders[i].CompareTag("Creature"))
+            {
+                Debug.Log("CREATURE SPOTTED!");
+                creature = placeHolders[i];
+            }
         }
+
+        CreateTheCreature(creature);
+        var surface = filmGroup.AddComponent<NavMeshSurface>();
+        surface.collectObjects = CollectObjects.Children;
+        surface.BuildNavMesh();
+       return surface.UpdateNavMesh(new NavMeshData());
+    }
+
+    private void CreateTheCreature(GameObject obj)
+    {
+        var creature = obj.GetComponent<Creature>();
+        creature.ChangeState(new RoarState());
+        creature.SetSeePlayer(true);
     }
 }

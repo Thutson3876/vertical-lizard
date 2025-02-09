@@ -15,7 +15,7 @@ public class PlayerController : MonoBehaviour
     private CharacterController characterController;
     private float verticalVelocity = 0.0f;
     private float gravity = -9.81f;
-    private float jumpHeight = 1.5f;
+    public float jumpHeight = 0.5f;
     private float xRotation = 0f;
     bool isPlayerActive;
     LensDistortion lensDistortion;

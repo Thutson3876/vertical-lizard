@@ -3,6 +3,7 @@ using System.Collections;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Player : MonoBehaviour
@@ -66,13 +67,17 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.F))
+        /*if(Input.GetKeyDown(KeyCode.F))
         {
             StartCoroutine(Capture());
-        }
+        }*/
         if (Input.GetKeyDown(KeyCode.G))
         {
             //StartCoroutine(PlaceItem());
+        }
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            ReloadScene();
         }
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
@@ -218,6 +223,9 @@ public class Player : MonoBehaviour
 
         yield return new WaitForSeconds(0.1f);
 
+        Tween.LocalPosition(filmParent, idleFilmPos, 0.1f, Ease.OutExpo);
+        Tween.LocalRotation(filmParent, idleFilmRotation, 0.1f, Ease.OutExpo);
+
         Destroy(heldItem.gameObject);
 
         heldItem = null;
@@ -252,5 +260,10 @@ public class Player : MonoBehaviour
 
             yield return waitTime; 
         }
+    }
+
+    private void ReloadScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
