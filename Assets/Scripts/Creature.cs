@@ -48,6 +48,7 @@ public class Creature : MonoBehaviour
         _collider.hasModifiableContacts = true;
         Physics.ContactModifyEvent += PhysicsOnContactModifyEvent;
         _rbID = _rigidbody.GetInstanceID();
+        _rigidbody.useGravity = false;
     }
 
     private void OnDisable()
@@ -111,7 +112,6 @@ public class Creature : MonoBehaviour
             lookPos.y = 0f;
             transform.rotation = Quaternion.LookRotation(lookPos.normalized, Vector3.up);
             var targetVel = (target.Value - transform.position).normalized * creatureSpeed;
-            targetVel.y = _rigidbody.velocity.y;
             _rigidbody.velocity = targetVel;
         }
     }
