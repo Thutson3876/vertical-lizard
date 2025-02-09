@@ -47,12 +47,18 @@ public class SceneTransition : MonoBehaviour
             });
 
             CanMove = true;
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                transform.GetChild(i).gameObject.SetActive(false);
+            }
         }
     }
 
     public void PrintCounter()
     {
         print("Counter: " +  frustumCounter);
-        loadingText.text = "Loading... " + frustumCounter;
+        loadingText.text = "Loading... [" 
+            + (int)Mathf.Max((15 - frustumCounter), 0)
+            + "/15]";
     }
 }
