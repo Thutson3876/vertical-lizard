@@ -7,6 +7,10 @@ using UnityEngine.AI;
 
 public class Creature : MonoBehaviour
 {
+    private static readonly int WalkBlend = Animator.StringToHash("WalkBlend");
+    private static readonly int Death = Animator.StringToHash("Death");
+    private static readonly int Attack = Animator.StringToHash("Attack");
+    private static readonly int Scream = Animator.StringToHash("Scream");
     [SerializeField] private int tickRate = 30;
     [SerializeField] private Transform targetTr;
     [SerializeField] private float creatureSpeed = 3f;
@@ -20,6 +24,7 @@ public class Creature : MonoBehaviour
     private float _tickTime;
     private float _timeSinceTarget = 0f;
     private Rigidbody _rigidbody;
+    private Animator _animator;
 
     private void Awake()
     {
@@ -29,6 +34,11 @@ public class Creature : MonoBehaviour
         _timeSinceTarget = Time.unscaledTime + targetLostTime;
         _currentState.OnEnter(this, null);
         _rigidbody = GetComponent<Rigidbody>();
+        _animator = GetComponentInChildren<Animator>();
+        if (targetTr == null)
+        {
+            targetTr = Camera.main.transform;
+        }
     }
 
     private void Update()
@@ -40,8 +50,24 @@ public class Creature : MonoBehaviour
         }
 
         LookForTarget();
+        _animator.SetFloat(WalkBlend, Mathf.InverseLerp(0f, agent.speed, agent.velocity.magnitude));
         _currentState.OnTick(this);
         _timeSinceLastTick = Time.unscaledTime + _tickTime;
+    }
+
+    public void PlayDeathAnimation()
+    {
+        _animator.SetTrigger(Death);
+    }
+
+    public void PlayAttackAnimation()
+    {
+        _animator.SetTrigger(Attack);
+    }
+
+    public void PlayScreamAnimation()
+    {
+        _animator.SetTrigger(Scream);
     }
 
     private void FixedUpdate()

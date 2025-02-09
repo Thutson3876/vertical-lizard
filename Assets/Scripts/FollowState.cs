@@ -29,6 +29,7 @@ public class FollowState : FiniteState
         if (Vector3.SqrMagnitude(creature.transform.position.ToXZ() - creature.Target.position.ToXZ()) < 0.1f * 0.1f)
         {
             Debug.Log("kill");
+            creature.PlayAttackAnimation();
         }
 
         if (NavMesh.SamplePosition(creature.Target.position, out var hit, 1f, 1))
