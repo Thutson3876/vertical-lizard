@@ -11,6 +11,12 @@ public class Blackhole : MonoBehaviour
     Image[] uiImages;
 
     [SerializeField]
+    Sprite[] sprites;
+
+    [SerializeField]
+    Image batteryImage;
+
+    [SerializeField]
     int nextSceneBuildIdx = 1;
 
     [SerializeField] private FlashbangVolume flashbangVolume;
@@ -35,7 +41,9 @@ public class Blackhole : MonoBehaviour
     private void DraggableEntered(Collider other)
     {
         score++;
-        uiImages[score - 1].enabled = true;
+        //uiImages[score - 1].enabled = true;
+
+        batteryImage.sprite = sprites[score -1];
 
         Destroy(other.gameObject);
         
