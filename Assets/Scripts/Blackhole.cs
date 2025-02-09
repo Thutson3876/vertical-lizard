@@ -15,6 +15,8 @@ public class Blackhole : MonoBehaviour
 
     [SerializeField] private FlashbangVolume flashbangVolume;
 
+    [SerializeField] private RefreshJerryMessage jerryMessage;
+
     int score = 0;
 
     private void Start()
@@ -36,6 +38,8 @@ public class Blackhole : MonoBehaviour
         uiImages[score - 1].enabled = true;
 
         Destroy(other.gameObject);
+        
+        jerryMessage.RefreshMessage();
 
         if (score >= 4)
         {
