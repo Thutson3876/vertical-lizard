@@ -10,6 +10,7 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private int hitCount = 2;
     public static PlayerHealth Instance;
     private int _hits = 0;
+    private bool _isDead = false;
     private void Awake()
     {
         Instance = this;
@@ -17,13 +18,18 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage()
     {
+        if (_isDead)
+        {
+            return;
+        }
         Debug.Log("ah fuck i got hit by the creature");
         _hits++;
         damageEffect?.SetActive(true);
         if (_hits >= hitCount)
         {
+            _isDead = true;
             Debug.Log("ah fuck im dead");
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            MenuManager.Instance.DisplayDeathMenu();
         }
     }
 }

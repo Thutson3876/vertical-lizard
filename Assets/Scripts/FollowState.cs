@@ -31,9 +31,12 @@ public class FollowState : FiniteState
         {
             Debug.Log("kill");
             creature.PlayAttackAnimation();
-            Tween.Delay(0.5f, () =>
+            Tween.Delay(creature.attackTime, () =>
             {
-                PlayerHealth.Instance.TakeDamage();
+                if (Vector3.Distance(creature.Target.position, creature.transform.position) < 2.5f)
+                {
+                    PlayerHealth.Instance.TakeDamage();
+                }
             });
             creature.ChangeState(new IdleState(creature.idleTimeAfterAttacking));
         }
