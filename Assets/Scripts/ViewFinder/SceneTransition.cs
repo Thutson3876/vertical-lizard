@@ -45,6 +45,8 @@ public class SceneTransition : MonoBehaviour
                 coverage.color = c;
                 loadingText.color = c2;
             });
+
+            CanMove = true;
         }
     }
 
