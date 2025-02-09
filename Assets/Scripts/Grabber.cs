@@ -35,7 +35,7 @@ public class Grabber : MonoBehaviour
         if (_currentHeldBody == null)
         {
             if (!Physics.SphereCast(_cameraRay, 0.15f, out RaycastHit hit, maxGrabDistance, grabLayers)) return;
-            if (hit.rigidbody != null)
+            if (hit.rigidbody != null && !hit.rigidbody.isKinematic)
             {
                 PickupObject(hit);
             }
